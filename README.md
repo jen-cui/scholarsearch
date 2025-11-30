@@ -1,73 +1,120 @@
-# CS 4100 Course Project: Fall 2025
+## Abstract
 
-In this course project, we will design an AI agent system, which uses a language model to understand text queries and perform actions—such as searching databases—to provide answers to queries. We will provide you with an example workflow to build an information retrieval agent, though you are also welcome to explore different topics and build your own agent instead.
+This project is an AI-powered search system designed to retrieve and synthesize relevant biomedical research papers from PubMed. The system reranks and summarizes scientific literature to help researchers quickly find and understand key findings across multiple studies. By fine-tuning a BioBERT-based cross-encoder on biomedical question-answer pairs and integrating a BART summarization model, this project aims to deliver concise, relevant answers to complex research queries. The system achieves improved relevance ranking over baseline keyword search while maintaining fast query response times.
 
-**Learning objectives**
+## Overview
 
-By the end of this project, you will learn the step-by-step workflow of implementing an agent system, including:
+### The Problem
 
-- A search method that, given an input query, retrieves the most relevant documents from a database.
-- Prompting an open-source language model to generate step-by-step actions given a query; Load and use a language model to produce outputs that follow a defined format.
-- Build an agent system capable of performing database retrieval.
+Biomedical researchers face an overwhelming volume of scientific literature, with millions of papers published annually on PubMed alone. Traditional keyword-based search often returns hundreds of results, requiring researchers to manually read through abstracts to identify relevant studies. This process is time consuming and inefficient, particularly when trying to synthesize findings across multiple papers or answer specific research questions. The challenge is to build a system that not only retrieves relevant papers but also understands semantic relationships between queries and documents, then presents findings in a digestible format.
 
-**Milestones** 
+### Why This Problem Matters
 
-We will implement the agent system using Python, with a set of starter code provided in a [GitHub repository](https://github.com/VirtuosoResearch/CS4100_project), which includes four milestones:
+Efficient literature search is critical for advancing scientific research and evidence-based medicine. Researchers need to quickly identify relevant prior work to avoid duplicating studies, build on existing knowledge, and make informed decisions. In clinical settings, healthcare professionals require rapid access to the latest research to inform treatment decisions. A more intelligent search system can accelerate scientific discovery, improve research quality, and ultimately contribute to better health outcomes.
 
-- Implementing the search method.
-- Implement the prompting methods.
-- Write code to use language models, including loading the model and writing functions to generate results with the models.
-- Writing a class to combine the functions and implement the workflow of the agent.
+### Proposed Approach
 
-You can test each part using [the provided Jupyter notebook](https://github.com/VirtuosoResearch/CS4100_project/blob/main/Course Project Handout.ipynb).
+This project employs a three-stage pipeline: 
 
-**Expected workload**
+1. Initial retrieval using PubMed's search API with query preprocessing.
 
-- 1st milestone: ~30 lines of code or ~5 hours of work.
-- 2nd milestone: ~20 lines of code or ~4 hours of work.
-- 3rd milestone: ~30 lines of code or ~6 hours of work.
-- 4th milestone: ~30 lines of code or ~5 hours of work. 
+2. Reranking using a fine-tuned BioBERT cross-encoder to score query-document relevance.
 
-**Project workflow**
+3. Extractive summarization using DistilBART to condense findings from top-ranked papers.
 
-We now introduce the workflow. For example, suppose we want to develop an agent system capable of retrieving information from a database to answer user questions.
+### Rationale
 
-- We will first create a small collection of Wikipedia-like documents and then use a search method to find related information to the query. The search method will be based on [**TF-IDF**](https://en.wikipedia.org/wiki/Tf–idf), a technique used in search engines to rank documents according to their relevance to a user’s query. 
-- We will design prompting formats to guide a language model in generating responses and calling the previously defined search method.
-- We will then use a language model from Hugging Face. By applying the loading and generation functions, the model will process the retrieved documents to find answers within the information.
-- We will implement a workflow that enables the agent to iteratively generate search actions using the language model and retrieve new information from the database.
+Prior work in biomedical information retrieval has shown that domain-specific language models (like BioBERT) outperform general-purpose models due to their training on medical literature. Cross-encoders, which jointly encode query and document pairs, have demonstrated superior performance over bi-encoders for reranking tasks, though at higher computational cost. Our approach differs from existing systems by integrating reranking with multi-document summarization, providing not just a ranked list but synthesized insights. I chose DistilBART for summarization due to its balance of speed and quality, making the system practical for real-time use.
 
-**Expected tools and platforms**
+### Key Components
 
-We will use Python as the programming language for this project. For data processing, we will work with NumPy and Pandas. To handle text data, we will apply Python’s built-in string operations to process queries and documents. Additionally, we will utilize pretrained language model implementations from the Hugging Face Transformers library.
+The system consists of three main components: 
+1. A PubMed knowledge base interface that retrieves initial candidates.
 
-**Next steps**
+2. A BioBERT-based reranker fine-tuned on BioASQ question-answer pairs.
 
-1. Form a team with two or three classmates.
-2. Make a plan to work on the project, such as setting up a weekly meeting time, a project document / overleaf write-up, etc.
-3. Brainstorm about potential project ideas and make a decision by the end of next Friday, Oct 17.
-4. Make a presentation file to present the overall project idea and share with the rest of the class, and sign up for a presentation slot on Oct 20 or Oct 23!
+3. A DistilBART summarizer that processes each abstract individually before presenting their brief summaries. 
+    
+### Result Components
+Here are the components of the result:
+1. List of top papers
 
-## Python Environment
+Each paper:
+- Title
+- Relevance score
+- Source ID
 
-- [Google Colab](https://colab.research.google.com/). 
-- Local computing ([instructions](https://github.com/VirtuosoResearch/CS4100_project/blob/main/Resources/Set-up-a-Local-Python-Environment.md)) using [Anaconda](https://www.anaconda.com/download).
-- Discover cluster: Discovery is a high-performance computing (HPC) resource for the Northeastern University research community. If you need computation resources for your course project, you can apply for access to the Discovery cluster. We provide the instructions for accessing a Discover cluster [in the document here](https://github.com/VirtuosoResearch/CS4100_project/blob/main/Resources/Accessing-and-Using-Discovery-Clusters.md).
+## Approach
 
-## Examples of AI Agents
+### Methodology
 
-We describe a few examples of modern AI agents. An AI agent is a software system that utilizes language models to automate tasks.
+The overall methodology follows a retrieves then rerank system. First, we preprocess queries and removes stopwords to improve search. These candidates from the inital retrieval are then passed to a trained reranker that computes semantic similarity scores between the query and each paper's title and abstract. Finally, the top 5 reranked papers are summarized individually using a summarization model, with results presented to the user in ranked order.
 
-A travel assistant agent helps plan a trip from start to finish by interpreting a traveler’s request, including dates, budget, and interests. Companies like [Mindtrip AI](https://mindtrip.ai/) and [Booked AI](https://www.booked.ai/) have already built such AI-powered travel planners. These agents search for flights and hotels, check basic rules, and suggest itineraries.
+### Algorithm/Model
 
-A software engineering agent helps developers build, debug, and maintain software projects more efficiently. Examples include [GitHub Copilot ](https://github.com/features/copilot)and [Tabnine Coding Assistant](https://www.tabnine.com/). Such an agent assists users in understanding codebases, fixing bugs, and managing development workflows. 
+**Reranker**: I use a BioBERT-based cross-encoder (dmis-lab/biobert-base-cased-v1.1) and fine-tune it on the BioASQ 12B dataset. The model takes [query, document] pairs as input and outputs a relevance score. Training uses binary cross-entropy loss with positive pairs from question-answer matches and hard negatives. Hard negatives are generated by computing TF-IDF similarity between each query and the corpus, selecting high-similarity but non-relevant documents as negatives. This forces the model to learn fine-grained distinctions between relevant and superficially similar documents.
 
-A customer service agent assists users by answering questions and resolving issues quickly and accurately. Examples include [Zendesk AI Assist](https://www.zendesk.com/service/ai/) and [Intercom Fin AI Agent](https://fin.ai/drlp/ai-agent), which automatically handle customer inquiries and escalate complex cases to human staff. Such an agent’s role is to interpret customer messages, locate useful information, and send helpful responses.
+**Summarizer**: I employ DistilBART-CNN-12-6, a distilled version of BART fine-tuned on CNN/DailyMail news articles so it can perform faster, producing concise 2-3 sentence summaries per paper.
 
-## Related Papers
+### Assumptions and Design Choices
 
-- [Toolformer](https://arxiv.org/abs/2302.04761): Language Models Can Teach Themselves to Use Tools
-- [Retrieval-Augmented Generation](https://arxiv.org/abs/2005.11401): Combining generation with non-parametric memory; useful baseline/variant for your tool-use agent.[ ](https://arxiv.org/abs/2005.11401?utm_source=chatgpt.com)
-- [Self-Consistency](https://arxiv.org/abs/2203.11171) Improves Chain of Thought Reasoning in Language Models 
+- **Assumption**: PubMed's initial retrieval has relevant papers in the top 20
+- **Choice**: BioBERT over general BERT domain-specific pretraining improves biomedical understanding
 
-- [ReAct](https://arxiv.org/abs/2210.03629?utm_source=chatgpt.com): Synergizing Reasoning and Acting in Language Models.
+### Limitations
+
+- **Coverage**: Due to time, the model only searches PubMed and does not include papers in other databases, although extending it to include that functionality is not difficult. 
+- **Query understanding**: Effective queries partly depend on the user.
+
+## Experiments
+
+### Dataset
+
+**Training Data**: BioASQ 12B question-answer-passages dataset, containing biomedical questions paired with relevant text snippets from PubMed abstracts.
+
+**Corpus Statistics**: 
+
+
+### Implementation
+
+**Models**:
+- Reranker: BioBERT cross-encoder (dmis-lab/biobert-base-cased-v1.1)
+- Summarizer: DistilBART-CNN-12-6 (sshleifer/distilbart-cnn-12-6) (untrained)
+
+**Parameters**:
+
+
+**Computing Environment**:
+
+### Model Architecture
+
+
+## Results
+
+### Main Results
+
+### Supplementary Results
+
+
+## Discussion
+
+### Comparison with Existing Approaches
+
+
+### Future Directions
+
+1. **Query Reformulation**: Add a query expansion module to automatically add synonyms and related terms to the query.
+
+2. **Larger Training Set**: Train on more datasets with more compute resources to improve reranker.
+
+3. **Comprehensive Database**: Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
+
+4. **Citation Network**: Incorporate citation relationships to boost papers that are highly cited by other relevant papers
+
+5. **Broader Coverage**: Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
+
+## Conclusion
+
+
+## References
+
