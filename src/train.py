@@ -1,14 +1,13 @@
+# Training was done in notebooks/train.ipynb for better computational power. Code is here for reference.
+
 from datasets import load_dataset
-from tqdm import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
-import random
-from sklearn.metrics.pairwise import linear_kernel
-from sentence_transformers import InputExample, CrossEncoder
-from torch.utils.data import DataLoader
 
 ds = load_dataset("mattmorgis/bioasq-12b-rag", "question-answer-passages")
 train_ds = ds["dev"]
+
+import json
+from tqdm import tqdm
+
 positive_pairs = []
 
 for ex in tqdm(train_ds):
@@ -24,16 +23,22 @@ for ex in tqdm(train_ds):
                 "positive": text
             })
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+
 corpus = [p["positive"] for p in positive_pairs]
+
 vectorizer = TfidfVectorizer(max_features=50000, stop_words='english')
 corpus_embeddings = vectorizer.fit_transform(corpus)
+
+import random
+from sklearn.metrics.pairwise import linear_kernel
 
 triples = []
 queries = [p["query"] for p in positive_pairs]
 query_embeddings = vectorizer.transform(queries)
 
-batch_size = 256
-
+batch_size = 1024
 for i in tqdm(range(0, len(queries), batch_size)):
     end = min(i + batch_size, len(queries))
     batch_scores = linear_kernel(query_embeddings[i:end], corpus_embeddings)
@@ -42,6 +47,7 @@ for i in tqdm(range(0, len(queries), batch_size)):
         scores = batch_scores[j]
         q = queries[idx]
         pos = positive_pairs[idx]["positive"]
+
         top_k_indices = np.argpartition(scores, -50)[-50:]
 
         cand = []
@@ -56,6 +62,8 @@ for i in tqdm(range(0, len(queries), batch_size)):
                 "positive": pos,
                 "negative": neg
             })
+
+from sentence_transformers import InputExample
 
 train_samples = []
 for t in triples:
@@ -72,10 +80,18 @@ for t in triples:
         )
     )
 
-model_name = "dmis-lab/biobert-base-cased-v1.1"
+from sentence_transformers import CrossEncoder
+from torch.utils.data import DataLoader
 
-model = CrossEncoder(model_name, num_labels=1, device='cpu')
+model_name = "dmis-lab/biobert-base-cased-v1.1"
+model = CrossEncoder(model_name, num_labels=1)
+
+import os
+
 train_dataloader = DataLoader(train_samples, shuffle=True, batch_size=16)
+
+os.environ["WANDB_DISABLED"] = "true"
+
 model.fit(
     train_dataloader=train_dataloader,
     epochs=2,
