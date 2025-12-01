@@ -12,8 +12,8 @@ class PaperSearchSystem:
     
     def search(self, query, max_results=20, rerank_top_k=10):
         stopwords = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'be', 'been', 'being'}
-        query = ' '.join(w for w in query.lower().split() if w not in stopwords)
-        pmids = pubmed_search(query, max_results=max_results)
+        clean_query = ' '.join(w for w in query.lower().split() if w not in stopwords)
+        pmids = pubmed_search(clean_query, max_results=max_results)
         
         if not pmids:
             return []

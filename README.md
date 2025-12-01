@@ -61,8 +61,9 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 
 ### Limitations
 
-- **Coverage**: Due to time, the model only searches PubMed and does not include papers in other databases, although extending it to include that functionality is not difficult. 
-- **Query understanding**: Effective queries partly depend on the user.
+- Due to time, the model only searches PubMed and does not include papers in other databases, although extending it to include that functionality is not difficult. 
+- Effective queries partly depend on the user.
+- The full text of articles are not considered by the reranker in consideration of computational time for this project.
 
 ## Experiments
 
@@ -97,7 +98,7 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 **Cross-Encoder Reranker**:
 - Base model: BioBERT (BERT-base architecture with 12 layers, 768 hidden dimensions, 12 attention heads)
 - Pre-trained on: PubMed abstracts and PMC full-text articles
-- Input: Concatenated [CLS] query [SEP] document [SEP] tokens (max 512 tokens)
+- Input: Query and document joined together with special separator tokens
 - Output: Single relevance score via classification head
 - Parameters: ~110M
 
@@ -111,11 +112,12 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 ## Results
 
 The fine-tuned BioBERT cross-encoder demonstrates strong performance on the BioASQ 12B evaluation set:
+'F1': np.float64(0.9520729197294914), 'Accuracy': np.float64(0.9216722729456992), 'Precision': np.float64(0.9753012048192771), 'Recall': np.float64(0.9299253302699598)}
 
-F1 Score:
-Accuracy: 
-Percision:
-Recall:
+F1 Score: 95%
+Accuracy: 92%
+Percision: 97%
+Recall: 93%
 
 ![Evaluation metrics](results/EvalMetrics.png)
 
@@ -123,33 +125,53 @@ Recall:
 
 ![Step vs Training loss](results/TrainingLossStep.png)
 
-1. **Batch Size (1024)**:
+1. **Batch Size: 1024**:
    - Chosen to maximize GPU utilization on A100
    - Smaller batches increased training time without performance gains
 
-2. **Epochs (2)**:
+2. **Epochs: 2**:
    - Model converged after 2 epochs based on training loss
    - Additional epochs showed signs of overfitting on validation set
    - Training time: ~30 minutes for 2 epochs
 
-3. **Warmup Steps (100)**:
-   - Represents ~1.3% of total training steps
+3. **Warmup Steps: 100**:
    - Prevents early training instability and improves convergence
    - Standard practice for transformer fine-tuning
 
 ## Discussion
 
 ### Comparison with Existing Approaches
-This model ranks papers by relevance more accuratly than PubMed's search engine. 
+This model tends to understand semantic meaning more accuratly than PubMed's search engine. 
 
-Example prompt:
+**Example prompt**: "What are what are the effects of e-cigarettes on sleep quality?"
 
+**PubMed's Advanced Search ranking**:
+1. 2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines.
 
-PubMed's ranking:
+2. Contemporary Concise Review 2024: Chronic Obstructive Pulmonary Disease.
 
+3. On the potential harmful effects of E-Cigarettes (EC) on the developing brain: The relationship between vaping-induced oxidative stress and adolescent/young adults social maladjustment.
 
-Model's ranking:
+4. Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic.
 
+5. Comparative effects of e-cigarette and conventional cigarette smoke on in vitro bronchial epithelial cell responses.
+
+6. The Effect of Cigarette Use and Dual-Use on Depression and Sleep Quality.
+
+**Model's ranking**:
+
+1. The Lifestyle of Saudi Medical Students. 
+   (*Does not seem related at first glance, but the abstract reveals that the paper reports e-cigarette usage and sleep data. PubMed ranks this paper as #9.)
+
+2. Bidirectional Relationships Between Sleep Quality and Nicotine Vaping: Studying Young Adult e-cigarette Users in Real Time and Real Life.
+
+3. Main and Interactive Effects of Nicotine Product Type on Sleep Health Among Dual Combustible and E-Cigarette Users.
+
+4. Sleep disturbances among young adult dual users of cigarettes and e-cigarettes: Analysis of the 2020 National Health Interview Survey.
+
+5. Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic.
+
+6. Dual use of e-cigarettes with conventional tobacco is associated with increased sleep latency in cross-sectional Study.
 
 ### Future Directions
 
@@ -163,7 +185,13 @@ Model's ranking:
 
 5. Broader Coverage: Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
 
+6. Find and include the full article text when reranking.
+
 ## Conclusion
+
+This project demonstrates that combining domain-specific language models with neural reranking and automatic summarization can improve biomedical literature search. The fine-tuned BioBERT cross-encoder can successfully capture semantic relationships that traditional keyword-based search systems miss. By understanding biomedical terminology and concepts beyond exact keyword matches, the system ranks papers by true relevance rather than superficial term overlap. As demonstrated, semantic understanding of biomedical concepts leads to more relevant results, particularly for complex or specialized queries.
+
+This work contributes to the broader goal of accelerating scientific discovery by making literature search more intelligent, efficient, and accessible. By reducing the time researchers spend searching and reading abstracts, systems like this can help accelerate the pace of biomedical research and ultimately improve health outcomes.
 
 
 ## References
