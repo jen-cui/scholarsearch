@@ -112,7 +112,6 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 ## Results
 
 The fine-tuned BioBERT cross-encoder demonstrates strong performance on the BioASQ 12B evaluation set:
-'F1': np.float64(0.9520729197294914), 'Accuracy': np.float64(0.9216722729456992), 'Precision': np.float64(0.9753012048192771), 'Recall': np.float64(0.9299253302699598)}
 
 F1 Score: 95%
 Accuracy: 92%
@@ -177,15 +176,14 @@ This model tends to understand semantic meaning more accuratly than PubMed's sea
 
 1. Query Reformulation: Add a query expansion module to automatically add synonyms and related terms to the query.
 
-2. Larger Training Set: Train on more datasets with more compute resources to improve reranker.
+2. Find and include the full article text when reranking.
 
-3. Comprehensive Database: Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
+3. Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
 
-4. Citation Network: Incorporate citation relationships to boost papers that are highly cited by other relevant papers
+4. Incorporate citation relationships to boost papers that are highly cited by other relevant papers
 
-5. Broader Coverage: Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
+5. Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
 
-6. Find and include the full article text when reranking.
 
 ## Conclusion
 
