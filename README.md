@@ -145,45 +145,42 @@ This model tends to understand semantic meaning more accuratly than PubMed's sea
 **Example prompt**: "What are what are the effects of e-cigarettes on sleep quality?"
 
 **PubMed's Advanced Search ranking**:
-1. 2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines.
+1. "2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines."
 
-2. Contemporary Concise Review 2024: Chronic Obstructive Pulmonary Disease.
+2. "Contemporary Concise Review 2024: Chronic Obstructive Pulmonary Disease."
 
-3. On the potential harmful effects of E-Cigarettes (EC) on the developing brain: The relationship between vaping-induced oxidative stress and adolescent/young adults social maladjustment.
+3. "On the potential harmful effects of E-Cigarettes (EC) on the developing brain: The relationship between vaping-induced oxidative stress and adolescent/young adults social maladjustment."
 
-4. Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic.
+4. "Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."
 
-5. Comparative effects of e-cigarette and conventional cigarette smoke on in vitro bronchial epithelial cell responses.
+5. "Comparative effects of e-cigarette and conventional cigarette smoke on in vitro bronchial epithelial cell responses."
 
-6. The Effect of Cigarette Use and Dual-Use on Depression and Sleep Quality.
+6. "The Effect of Cigarette Use and Dual-Use on Depression and Sleep Quality."
 
 **Model's ranking**:
 
-1. The Lifestyle of Saudi Medical Students. 
+1. "The Lifestyle of Saudi Medical Students." 
    (*Does not seem related at first glance, but the abstract reveals that the paper reports e-cigarette usage and sleep data. PubMed ranks this paper as #9.)
 
-2. Bidirectional Relationships Between Sleep Quality and Nicotine Vaping: Studying Young Adult e-cigarette Users in Real Time and Real Life.
+2. "Bidirectional Relationships Between Sleep Quality and Nicotine Vaping: Studying Young Adult e-cigarette Users in Real Time and Real Life."
 
-3. Main and Interactive Effects of Nicotine Product Type on Sleep Health Among Dual Combustible and E-Cigarette Users.
+3. "Main and Interactive Effects of Nicotine Product Type on Sleep Health Among Dual Combustible and E-Cigarette Users."
 
-4. Sleep disturbances among young adult dual users of cigarettes and e-cigarettes: Analysis of the 2020 National Health Interview Survey.
+4. "Sleep disturbances among young adult dual users of cigarettes and e-cigarettes: Analysis of the 2020 National Health Interview Survey."
 
-5. Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic.
+5. "Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."
 
-6. Dual use of e-cigarettes with conventional tobacco is associated with increased sleep latency in cross-sectional Study.
+6. "Dual use of e-cigarettes with conventional tobacco is associated with increased sleep latency in cross-sectional Study."
 
 ### Future Directions
 
-1. Query Reformulation: Add a query expansion module to automatically add synonyms and related terms to the query.
+1. Find and include the full article text when reranking.
 
-2. Find and include the full article text when reranking.
+2. Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
 
-3. Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
+3. Incorporate citation relationships to boost papers that are highly cited by other relevant papers
 
-4. Incorporate citation relationships to boost papers that are highly cited by other relevant papers
-
-5. Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
-
+4. Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
 
 ## Conclusion
 
