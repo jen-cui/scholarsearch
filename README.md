@@ -124,16 +124,16 @@ Recall: 93%
 
 ![Step vs Training loss](results/TrainingLossStep.png)
 
-1. **Batch Size: 1024**:
+1. **Batch Size: 1024**
    - Chosen to maximize GPU utilization on A100
    - Smaller batches increased training time without performance gains
 
-2. **Epochs: 2**:
+2. **Epochs: 2**
    - Model converged after 2 epochs based on training loss
    - Additional epochs showed signs of overfitting on validation set
    - Training time: ~30 minutes for 2 epochs
 
-3. **Warmup Steps: 100**:
+3. **Warmup Steps: 100**
    - Prevents early training instability and improves convergence
    - Standard practice for transformer fine-tuning
 
