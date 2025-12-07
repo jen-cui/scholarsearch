@@ -1,6 +1,6 @@
 ## Instructions
 1. Clone the repository.
-2. Because GitHub doesn't upload files bigger than 100 MB, please download this file [here](https://drive.google.com/file/uc?export=download%id=1j_inAPr2MbV_ekZsoKqpFTf6i4dHKGAI) and place it in the "model" folder.
+2. Because GitHub doesn't upload files bigger than 100 MB, please download this file [here](https://github.com/jen-cui/scholarsearch/releases/download/file/model.safetensors) and place it in the "model" folder.
 3. Run main.py for a demo. To change the query, edit the string on line 9.
 
 See the project report below.
