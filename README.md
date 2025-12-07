@@ -1,69 +1,82 @@
 ## Abstract
 
-This project is an AI-powered search system designed to retrieve and synthesize relevant biomedical research papers from PubMed. The system reranks and summarizes scientific literature to help researchers quickly find and understand key findings across multiple studies. By fine-tuning a BioBERT-based cross-encoder on biomedical question-answer pairs and integrating a BART summarization model, this project aims to deliver concise, relevant answers to complex research queries. The system achieves improved relevance ranking over baseline keyword search while maintaining fast query response times.
+This project is an AI-powered search system designed to retrieve and synthesize relevant biomedical research papers from scientific sources. The system reranks and summarizes scientific literature to help researchers quickly find and understand key findings across multiple studies. By fine-tuning a BioBERT-based cross-encoder on biomedical question-answer pairs and integrating a BART summarization model, this project aims to deliver concise, relevant answers to complex research queries.
 
 ## Overview
 
 ### The Problem
 
-Biomedical researchers face an overwhelming volume of scientific literature, with millions of papers published annually on PubMed alone. Traditional keyword-based search often returns hundreds of results, requiring researchers to manually read through abstracts to identify relevant studies. This process is time consuming and inefficient, particularly when trying to synthesize findings across multiple papers or answer specific research questions. The challenge is to build a system that not only retrieves relevant papers but also understands semantic relationships between queries and documents, then presents findings in a digestible format.
+Biomedical researchers face an overwhelming volume of scientific literature, with millions of papers published annually on PubMed alone. Traditional keyword-based search often returns hundreds of results, requiring researchers to manually read through abstracts to identify relevant studies. This process is time consuming and inefficient, especially when trying to synthesize findings across multiple papers or answer specific research questions.
 
 ### Why This Problem Matters
 
-Efficient literature search is critical for advancing scientific research and evidence-based medicine. Researchers need to quickly identify relevant prior work to avoid duplicating studies, build on existing knowledge, and make informed decisions. In clinical settings, healthcare professionals require rapid access to the latest research to inform treatment decisions. A more intelligent search system can accelerate scientific discovery, improve research quality, and ultimately contribute to better health outcomes.
+Efficient literature search is critical for advancing scientific research and medicine. Researchers need to quickly identify relevant prior work to avoid duplicating studies, build on existing knowledge, and make informed decisions. In clinical settings, healthcare professionals require rapid access to the latest research to inform treatment decisions. A more intelligent search system can accelerate scientific discovery, improve research quality, and ultimately contribute to better health outcomes.
 
 ### Proposed Approach
 
 This project employs a three-stage pipeline: 
 
-1. Initial retrieval using PubMed's search API with query preprocessing.
+1. Initial retrieval using PubMed's search API.
 
-2. Reranking using a fine-tuned BioBERT cross-encoder to score query-document relevance.
+2. Reranking using a fine-tuned BioBERT cross-encoder to score relevance.
 
-3. Extractive summarization using DistilBART to condense findings from top-ranked papers.
+3. Summarization of top papers using DistilBART.
 
 ### Rationale
 
-Prior work in biomedical information retrieval has shown that domain-specific language models (like BioBERT) outperform general-purpose models due to their training on medical literature. Cross-encoders, which jointly encode query and document pairs, have demonstrated superior performance over bi-encoders for reranking tasks, though at higher computational cost. Our approach differs from existing systems by integrating reranking with multi-document summarization, providing not just a ranked list but synthesized insights. I chose DistilBART for summarization due to its balance of speed and quality, making the system practical for real-time use.
+BioBERT's pretraining on medical literature makes it well-suited for biomedical search tasks compared to general-purpose language models. Cross-encoders jointly process query-document pairs to produce relevance scores, offering stronger semantic matching than bi-encoders. I chose DistilBART for summarization due to its balance of speed and quality, matching the scope of this project.
 
 ### Key Components
 
-The system consists of three main components: 
+The system is comprised of the following components: 
 1. A PubMed knowledge base interface that retrieves initial candidates.
 
 2. A BioBERT-based reranker fine-tuned on BioASQ question-answer pairs.
 
-3. A DistilBART summarizer that processes each abstract individually before presenting their brief summaries. 
-    
+3. A DistilBART summarizer that presents the brief summaries of the top 5 papers. 
+   
+4. An integration layer that connects the retrieval-rerank-summarize pipeline.
+
 ### Result Components
 List of top papers where each paper has:
 - Title
 - Relevance score
 - Source ID
-- Brief summary
+- Brief summary (for top 5)
 
 ## Approach
 
 ### Methodology
 
-The overall methodology follows a retrieves then rerank system. First, we preprocess queries and removes stopwords to improve search. These candidates from the inital retrieval are then passed to a trained reranker that computes semantic similarity scores between the query and each paper's title and abstract. Finally, the top 5 reranked papers are summarized individually using a summarization model, with results presented to the user in ranked order.
+The overall methodology follows a retrieves, rerank, and summerize system. First, the candidates from the inital retrieval are then passed to a trained reranker that computes semantic similarity scores between the query and each paper's title and abstract. Finally, the top 5 papers are summarized individually using a summarization model, with results presented to the user in ranked order.
 
-### Algorithm/Model
+### Models
 
-**Reranker**: BioBERT-based cross-encoder (dmis-lab/biobert-base-cased-v1.1) was used and fine-tuned on the BioASQ 12B dataset. The model takes [query, document] pairs as input and outputs a relevance score. Training uses binary cross-entropy loss with positive pairs from question-answer matches and hard negatives. Hard negatives are generated by computing TF-IDF similarity between each query and the corpus, selecting high-similarity but non-relevant documents as negatives. This forces the model to learn distinctions between relevant and superficially similar documents.
+**Reranker**: BioBERT-based cross-encoder (dmis-lab/biobert-base-cased-v1.1) was used and fine-tuned on the BioASQ 12B dataset. The model takes [query, answer] pairs as input and outputs a relevance score. Training uses binary cross-entropy loss with positive pairs from question-answer matches and hard negatives. Hard negatives are generated by computing TF-IDF similarity between each query and the corpus, selecting high-similarity but non-relevant snippets as negatives. This forces the model to learn distinctions between relevant and superficially similar text.
 
 **Summarizer**: DistilBART-CNN-12-6, a distilled version of BART so it can perform faster, was employed to produce concise 2-3 sentence summaries for each paper.
 
 ### Assumptions and Design Choices
 
-- **Assumption**: PubMed's initial retrieval has relevant papers in the top 20
-- **Choice**: BioBERT over general BERT domain-specific pretraining improves biomedical understanding
+**Assumptions**: 
+- PubMed's initial retrieval has relevant papers
+- Title and abstract contain sufficient information for relevance scoring without full text
+- BioASQ training data generalizes well to diverse biomedical queries
+- Summarization of the top 5 papers provides a sufficient comprehensive overview all together
+
+**Choices**: 
+- BioBERT over general BERT - domain-specific pretraining improves biomedical understanding
+- Cross-encoder over bi-encoder - better accuracy prioritized
+- Hard negative mining via TF-IDF - forces model to distinguish semantic relevance from keyword overlap
+- Individual paper summaries over multi-document summarization - reduces hallucinations
+- DistilBART over full BART - faster inference with minimal quality loss
 
 ### Limitations
 
 - Due to time, the model only searches PubMed and does not include papers in other databases, although extending it to include that functionality is not difficult. 
 - Effective queries partly depend on the user.
 - The full text of articles are not considered by the reranker in consideration of computational time for this project.
+- Summarizer trained on large general domain corpora, not scientific literature, so it may not capture technical nuances
 
 ## Experiments
 
@@ -90,7 +103,7 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 - Warmup steps: 100
 
 **Computing Environment**:
-- Platform: Google Colab Pro (Student)
+- Platform: Google Colab Pro (Student Liscense)
 - Hardware: A100 GPU + High-RAM
 
 ### Model Architecture
@@ -104,9 +117,10 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 
 **Summarizer**:
 - Base model: DistilBART-CNN-12-6 (distilled BART with 12 encoder layers, 6 decoder layers)
-- Pre-trained on: CNN/DailyMail dataset
+- Pre-trained on: Large general domain corpora
+- Fine-tuned on: CNN/DailyMail dataset
 - Input: Abstract text
-- Output: 2-3 sentence summary
+- Output: Summary
 - Parameters: ~306M (distilled from 406M)
 
 ## Results
@@ -114,8 +128,11 @@ The overall methodology follows a retrieves then rerank system. First, we prepro
 The fine-tuned BioBERT cross-encoder demonstrates strong performance on the BioASQ 12B evaluation set:
 
 F1 Score: 95%
+
 Accuracy: 92%
+
 Percision: 97%
+
 Recall: 93%
 
 ![Evaluation metrics](results/EvalMetrics.png)
@@ -130,8 +147,7 @@ Recall: 93%
 
 2. **Epochs: 2**
    - Model converged after 2 epochs based on training loss
-   - Additional epochs showed signs of overfitting on validation set
-   - Training time: ~30 minutes for 2 epochs
+   - Training time: ~30 minutes
 
 3. **Warmup Steps: 100**
    - Prevents early training instability and improves convergence
@@ -140,37 +156,40 @@ Recall: 93%
 ## Discussion
 
 ### Comparison with Existing Approaches
-This model tends to understand semantic meaning more accuratly than PubMed's search engine. 
+This model tends to understand semantic meaning more than PubMed's advanced search engine.
 
 **Example prompt**: "What are what are the effects of e-cigarettes on sleep quality?"
 
 **PubMed's Advanced Search ranking**:
-1. "2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines."
+1. *"2019 ACC/AHA Guideline on the Primary Prevention of Cardiovascular Disease: Executive Summary: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines."*
 
-2. "Contemporary Concise Review 2024: Chronic Obstructive Pulmonary Disease."
+2. *"Contemporary Concise Review 2024: Chronic Obstructive Pulmonary Disease."*
 
-3. "On the potential harmful effects of E-Cigarettes (EC) on the developing brain: The relationship between vaping-induced oxidative stress and adolescent/young adults social maladjustment."
+3. *"On the potential harmful effects of E-Cigarettes (EC) on the developing brain: The relationship between vaping-induced oxidative stress and adolescent/young adults social maladjustment."*
 
-4. "Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."
+4. *"Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."*
 
-5. "Comparative effects of e-cigarette and conventional cigarette smoke on in vitro bronchial epithelial cell responses."
+5. *"Comparative effects of e-cigarette and conventional cigarette smoke on in vitro bronchial epithelial cell responses."*
 
-6. "The Effect of Cigarette Use and Dual-Use on Depression and Sleep Quality."
+6. *"The Effect of Cigarette Use and Dual-Use on Depression and Sleep Quality."*
 
 **Model's ranking**:
 
-1. "The Lifestyle of Saudi Medical Students." 
-   (*Does not seem related at first glance, but the abstract reveals that the paper reports e-cigarette usage and sleep data. PubMed ranks this paper as #9.)
+1. *"The Lifestyle of Saudi Medical Students."*
+   (Does not seem related at first glance, but the abstract reveals that the paper reports e-cigarette usage and sleep data. PubMed ranks this paper as #9.)
 
-2. "Bidirectional Relationships Between Sleep Quality and Nicotine Vaping: Studying Young Adult e-cigarette Users in Real Time and Real Life."
+2. *"Bidirectional Relationships Between Sleep Quality and Nicotine Vaping: Studying Young Adult e-cigarette Users in Real Time and Real Life."*
 
-3. "Main and Interactive Effects of Nicotine Product Type on Sleep Health Among Dual Combustible and E-Cigarette Users."
+3. *"Main and Interactive Effects of Nicotine Product Type on Sleep Health Among Dual Combustible and E-Cigarette Users."*
 
-4. "Sleep disturbances among young adult dual users of cigarettes and e-cigarettes: Analysis of the 2020 National Health Interview Survey."
+4. *"Sleep disturbances among young adult dual users of cigarettes and e-cigarettes: Analysis of the 2020 National Health Interview Survey."*
 
-5. "Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."
+5. *"Deleterious Association of Inhalant Use on Sleep Quality during the COVID-19 Pandemic."*
 
-6. "Dual use of e-cigarettes with conventional tobacco is associated with increased sleep latency in cross-sectional Study."
+6. *"Dual use of e-cigarettes with conventional tobacco is associated with increased sleep latency in cross-sectional Study."*
+
+
+PubMed's top 3 results don't seem to be relevant, while the model's top 6 papers seem to be all relevant.
 
 ### Future Directions
 
@@ -180,14 +199,23 @@ This model tends to understand semantic meaning more accuratly than PubMed's sea
 
 3. Incorporate citation relationships to boost papers that are highly cited by other relevant papers
 
-4. Extend beyond PubMed to include other databases (bioRxiv, medRxiv).
+4. Extend beyond PubMed to include other databases (arXiv, bioRxiv, medRxiv).
 
 ## Conclusion
 
-This project demonstrates that combining domain-specific language models with neural reranking and automatic summarization can improve biomedical literature search. The fine-tuned BioBERT cross-encoder can successfully capture semantic relationships that traditional keyword-based search systems miss. By understanding biomedical terminology and concepts beyond exact keyword matches, the system ranks papers by true relevance rather than superficial term overlap. As demonstrated, semantic understanding of biomedical concepts leads to more relevant results, particularly for complex or specialized queries.
+This project demonstrates that combining domain-specific language models with neural reranking and automatic summarization can improve biomedical literature search. The fine-tuned BioBERT cross-encoder can successfully capture semantic relationships that traditional keyword-based search systems miss. By understanding biomedical terminology and concepts beyond exact keyword matches, the system ranks papers by true relevance rather than superficial term overlap. As demonstrated, semantic understanding of biomedical concepts can lead to more relevant results, particularly for complex or specialized queries.
 
-This work contributes to the broader goal of accelerating scientific discovery by making literature search more intelligent, efficient, and accessible. By reducing the time researchers spend searching and reading abstracts, systems like this can help accelerate the pace of biomedical research and ultimately improve health outcomes.
+This work contributes to a broader objective of accelerating scientific discovery by making literature search more intelligent, efficient, and accessible. By reducing the time researchers spend searching and reading abstracts, systems like this can help accelerate the pace of biomedical research and ultimately improve health outcomes.
 
 
 ## References
 
+- Lee, J., et al. (2020). BioBERT: a pre-trained biomedical language representation model for biomedical text mining. *Bioinformatics*, 36(4), 1234-1240. [[Paper]](https://doi.org/10.1093/bioinformatics/btz682) [[Code]](https://github.com/dmis-lab/biobert)
+
+- Lewis, M., et al. (2020). BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension. [[Paper]](https://arxiv.org/abs/1910.13461)
+
+- Krithara, A., et al. (2022). BioASQ-QA: A manually curated corpus for Biomedical Question Answering. *bioRxiv*. [[Paper]](https://doi.org/10.1101/2022.12.14.520213)
+
+- Wolf, T., et al. (2020). Transformers: State-of-the-Art Natural Language Processing. *EMNLP 2020: System Demonstrations*. [[Paper]](https://www.aclweb.org/anthology/2020.emnlp-demos.6/) [[Code]](https://github.com/huggingface/transformers)
+
+- Reimers, N., & Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. *EMNLP-IJCNLP 2019*. [[Paper]](https://arxiv.org/abs/1908.10084) [[Code]](https://github.com/UKPLab/sentence-transformers)
