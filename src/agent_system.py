@@ -2,10 +2,14 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 from src.search_system import PaperSearchSystem
 
-"""
-Complete agent system integrating search, reranking, and LLM reasoning.
-"""
 class Agent:
+    """
+    Complete agent system integrating search, reranking, and LLM reasoning.
+    
+    Attributes:
+        search_system (PaperSearchSystem): System for searching and reranking papers.
+        llm: Language model for summarization.
+    """
     def __init__(self, llm):
         self.search_system = PaperSearchSystem(reranker_model_path="./model")
         self.llm = llm
@@ -13,13 +17,26 @@ class Agent:
     def search_action(self, query: str):
         """
         Executes the search action.
-         - query (str): The user's search query.
-        Returns a list of top 10 papers.
+
+        Args:
+            query (str): The user's search query.
+        
+        Returns:
+            list: list of top 10 papers
         """
         results = self.search_system.search(query, max_results=10, rerank_top_k=10)
         return results
     
     def summarize(self, paper):
+        """
+        Generates a summary for a given paper.
+        
+        Args:
+            paper (dict): Paper dictionary containing 'abstract' key.
+        
+        Returns:
+            str: Generated summary text.
+        """
         text = f"{paper['abstract']}"
         summary = self.llm(text)[0]['summary_text']
         return summary
@@ -27,8 +44,9 @@ class Agent:
     def run(self, user_query: str):
         """
         Run the agent with multiple steps.
-         - user_query (str): The initial user query.
-        Returns a list of steps taken by the agent.
+        
+        Args:
+            user_query (str): The user query.
         """
         papers = self.search_action(user_query)
         if papers:

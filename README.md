@@ -1,7 +1,8 @@
 ## Instructions
 1. Clone the repository.
 2. Because GitHub doesn't allow files bigger than 100 MB, please download this file [here](https://github.com/jen-cui/scholarsearch/releases/download/file/model.safetensors) and place it in the "model" folder.
-3. Run main.py for a demo. To change the query, edit the string on line 9.
+3. Set up the environment and run `pip install -r requirements.txt` in the terminal.
+4. Run main.py for a demo. To change the query, edit the string on line 9.
 
 See the project report below.
 
@@ -163,7 +164,7 @@ Recall: 93%
 ## Discussion
 
 ### Comparison with Existing Approaches
-This model tends to understand semantic meaning more than PubMed's advanced search engine.
+This model tends to understand semantic meaning more than [PubMed's Advanced Search engine](https://pubmed.ncbi.nlm.nih.gov/advanced/).
 
 **Example prompt**: "What are what are the effects of e-cigarettes on sleep quality?"
 

@@ -1,13 +1,13 @@
-# Training was done in notebooks/train.ipynb for better computational power. Code is here for reference.
+# Training was done in notebooks/train.ipynb for better computational power. Code is here for reference and documentation.
 
 from datasets import load_dataset
 
 ds = load_dataset("mattmorgis/bioasq-12b-rag", "question-answer-passages")
 train_ds = ds["dev"]
 
-import json
 from tqdm import tqdm
 
+# Extract positive pairs
 positive_pairs = []
 
 for ex in tqdm(train_ds):
@@ -26,6 +26,7 @@ for ex in tqdm(train_ds):
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
+# Generate hard negatives using TF-IDF similarity
 corpus = [p["positive"] for p in positive_pairs]
 
 vectorizer = TfidfVectorizer(max_features=50000, stop_words='english')
@@ -63,6 +64,7 @@ for i in tqdm(range(0, len(queries), batch_size)):
                 "negative": neg
             })
 
+# Create training samples with labels
 from sentence_transformers import InputExample
 
 train_samples = []
@@ -80,6 +82,7 @@ for t in triples:
         )
     )
 
+# Train model
 from sentence_transformers import CrossEncoder
 from torch.utils.data import DataLoader
 
@@ -96,7 +99,7 @@ model.fit(
     train_dataloader=train_dataloader,
     epochs=2,
     warmup_steps=100,
-    output_path="model"
+    output_path="/model"
 )
 
-model.save("model")
+model.save("/model")

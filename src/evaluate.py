@@ -1,4 +1,4 @@
-# Evaluation was done in notebooks/evaluate.ipynb for better computational power. Code is here for reference.
+# Evaluation was done in notebooks/evaluate.ipynb for better computational power. Code is here for reference and documentation.
 
 import numpy as np
 from sentence_transformers import CrossEncoder
@@ -7,6 +7,7 @@ from datasets import load_dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 
+# Generate negative pairs using TF-IDF similarity and positive pairs.
 def generate_negatives(dataset, num_negatives=5):
     all_snippets = []
     snippet_to_question = {}
@@ -43,6 +44,7 @@ def generate_negatives(dataset, num_negatives=5):
 
     return eval_data
 
+# Evaluate
 def evaluate_reranker(model, eval_data, k=10, threshold=0.5):
     all_predictions = []
     all_labels = []
