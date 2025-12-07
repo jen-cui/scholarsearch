@@ -1,3 +1,10 @@
+## Instructions
+1. Clone the repository.
+2. Because GitHub doesn't upload files bigger than 100 MB, please download this file [here](https://drive.google.com/file/d/1j_inAPr2MbV_ekZsoKqpFTf6i4dHKGAI/uc?export=download) and place it in the "model" folder.
+3. Run main.py for a demo. To change the query, edit the string on line 9.
+
+See the project report below.
+
 ## Abstract
 
 This project is an AI-powered search system designed to retrieve and synthesize relevant biomedical research papers from scientific sources. The system reranks and summarizes scientific literature to help researchers quickly find and understand key findings across multiple studies. By fine-tuning a BioBERT-based cross-encoder on biomedical question-answer pairs and integrating a BART summarization model, this project aims to deliver concise, relevant answers to complex research queries.
@@ -33,7 +40,7 @@ The system is comprised of the following components:
 
 2. A BioBERT-based reranker fine-tuned on BioASQ question-answer pairs.
 
-3. A DistilBART summarizer that presents the brief summaries of the top 5 papers. 
+3. A DistilBART summarizer that presents brief summaries of the top 5 papers. 
    
 4. An integration layer that connects the retrieval-rerank-summarize pipeline.
 
@@ -48,7 +55,7 @@ List of top papers where each paper has:
 
 ### Methodology
 
-The overall methodology follows a retrieves, rerank, and summerize system. First, the candidates from the inital retrieval are then passed to a trained reranker that computes semantic similarity scores between the query and each paper's title and abstract. Finally, the top 5 papers are summarized individually using a summarization model, with results presented to the user in ranked order.
+The overall methodology follows a retrieve, rerank, and summarize system. First, the candidates from the initial retrieval are then passed to a trained reranker that computes semantic similarity scores between the query and each paper's title and abstract. Finally, the top 5 papers are summarized individually using a summarization model, with results presented to the user in ranked order.
 
 ### Models
 
@@ -62,7 +69,7 @@ The overall methodology follows a retrieves, rerank, and summerize system. First
 - PubMed's initial retrieval has relevant papers
 - Title and abstract contain sufficient information for relevance scoring without full text
 - BioASQ training data generalizes well to diverse biomedical queries
-- Summarization of the top 5 papers provides a sufficient comprehensive overview all together
+- Summarization of the top 5 papers provides a sufficiently comprehensive overview altogether
 
 **Choices**: 
 - BioBERT over general BERT - domain-specific pretraining improves biomedical understanding
@@ -75,7 +82,7 @@ The overall methodology follows a retrieves, rerank, and summerize system. First
 
 - Due to time, the model only searches PubMed and does not include papers in other databases, although extending it to include that functionality is not difficult. 
 - Effective queries partly depend on the user.
-- The full text of articles are not considered by the reranker in consideration of computational time for this project.
+- The full text of articles is not considered by the reranker in consideration of computational time constraints for this project.
 - Summarizer trained on large general domain corpora, not scientific literature, so it may not capture technical nuances
 
 ## Experiments
@@ -103,7 +110,7 @@ The overall methodology follows a retrieves, rerank, and summerize system. First
 - Warmup steps: 100
 
 **Computing Environment**:
-- Platform: Google Colab Pro (Student Liscense)
+- Platform: Google Colab Pro (Student License)
 - Hardware: A100 GPU + High-RAM
 
 ### Model Architecture
@@ -195,7 +202,7 @@ PubMed's top 3 results don't seem to be relevant, while the model's top 6 papers
 
 1. Find and include the full article text when reranking.
 
-2. Instead of calling PubMed's API, download its full data with a mechansim to update it daily.
+2. Instead of calling PubMed's API, download its full data with a mechanism to update it daily.
 
 3. Incorporate citation relationships to boost papers that are highly cited by other relevant papers
 
